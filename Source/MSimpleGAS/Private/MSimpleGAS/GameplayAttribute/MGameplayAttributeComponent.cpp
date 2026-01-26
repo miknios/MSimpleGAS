@@ -63,10 +63,12 @@ UMGameplayAttribute_Base* UMGameplayAttributeComponent::FindAttributeInstance(co
 	const bool bContainsAttribute = AttributeInstanceForClass.Contains(AttributeClass);
 	if (!bContainsAttribute)
 	{
+#if WITH_EDITOR
 		M::Debug::LogUserError(
 			LogTemp, FString::Printf(
 				TEXT("Trying to get Attribute with class %s, but it's not added to Gameplay Attribute Component"),
 				*AttributeClass->GetDisplayNameText().ToString()), GetOwner());
+#endif
 
 		return nullptr;
 	}
