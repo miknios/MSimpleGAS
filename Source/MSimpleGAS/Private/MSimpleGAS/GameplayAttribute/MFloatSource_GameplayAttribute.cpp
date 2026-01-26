@@ -6,17 +6,34 @@
 #include "MDebug.h"
 #include "MSimpleGAS/GameplayAttribute/MGameplayAttribute_FloatBase.h"
 
-float UMFloatSource_GameplayAttribute::GetFloatValue_Implementation() const
+float UMFloatSource_GameplayAttribute::GetFloatValue_Implementation(UObject* ContextObject) const
 {
-	AActor* OwnerActor = GetTypedOuter<AActor>();
+	AActor* OwnerActor = [this, ContextObject]
+	{
+		if (ContextObject != nullptr)
+		{
+			if (AActor* ContextActor = Cast<AActor>(ContextObject))
+			{
+				return ContextActor;
+			}
+
+			return ContextObject->GetTypedOuter<AActor>();
+		}
+
+		return GetTypedOuter<AActor>();
+	}();
+
 	if (OwnerActor == nullptr)
 	{
 		M::Debug::LogUserError(
-			LogTemp, TEXT("Trying to get Float Value from Gameplay Attribute Source, but Owner of this condition is not an actor"));
+			LogTemp,
+			TEXT(
+				"Trying to get Float Value from Gameplay Attribute Source, but Actor cannot be found in Float Source outer chain or provided Context Object outer chain"),
+			ContextObject);
 		return 0.f;
 	}
 
-	UMGameplayAttribute_FloatBase* AttributeFloat =
+	const UMGameplayAttribute_FloatBase* AttributeFloat =
 		UMGameplayAttribute_FloatBase::GetAttributeFloat(OwnerActor, AttributeClass);
 	if (AttributeFloat == nullptr)
 	{
