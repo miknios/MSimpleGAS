@@ -7,17 +7,22 @@
 #include "Subsystems/WorldSubsystem.h"
 #include "MGameplayActionComponent.generated.h"
 
+class UMGameplayActionImplementation;
 struct FMManualTimer;
 class UMGameplayCondition_Base;
 class UMMultisourceLockableBool;
 class UMGameplayActionAsset;
 
+DECLARE_MULTICAST_DELEGATE(FMOnActionTriggeredSignatureNative);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FMOnActionTriggeredSignature);
 
+DECLARE_MULTICAST_DELEGATE(FMOnActionStartedSignatureNative);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FMOnActionStartedSignature);
 
+DECLARE_MULTICAST_DELEGATE(FMOnActionCancelledSignatureNative);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FMOnActionCancelledSignature);
 
+DECLARE_MULTICAST_DELEGATE(FMOnActionFinishedSignatureNative);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FMOnActionFinishedSignature);
 
 USTRUCT()
@@ -68,6 +73,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void MarkActionFinished();
 
+	FMOnActionTriggeredSignatureNative OnActionTriggeredDelegateNative;
+	FMOnActionStartedSignatureNative OnActionStartedDelegateNative;
+	FMOnActionCancelledSignatureNative OnActionCancelledDelegateNative;
+	FMOnActionFinishedSignatureNative OnActionFinishedDelegateNative;
+
 	// Called when action was successfully triggered. This doesn't mean the action is started.
 	UPROPERTY(BlueprintAssignable)
 	FMOnActionTriggeredSignature OnActionTriggered;
@@ -103,6 +113,9 @@ protected:
 
 	UPROPERTY(Transient, VisibleAnywhere)
 	TObjectPtr<UMGameplayCondition_Base> Condition;
+	
+	UPROPERTY(Transient, VisibleAnywhere)
+	TObjectPtr<UMGameplayActionImplementation> ActionImplementation;
 
 	// Array of activation requests that happened when action was locked
 	UPROPERTY(Transient, VisibleAnywhere)
@@ -115,7 +128,7 @@ protected:
 	TObjectPtr<UMMultisourceLockableBool> MultisourceLockableBool;
 };
 
-UCLASS()
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class MSIMPLEGAS_API UMGameplayActionComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -134,6 +147,9 @@ public:
 	static void MarkActionFinishedOnActor(AActor* ActionOwnerActor, UMGameplayActionAsset* ActionAsset);
 
 	UFUNCTION(BlueprintCallable)
+	static bool IsActionActiveOnActor(AActor* ActionOwnerActor, UMGameplayActionAsset* ActionAsset);
+
+	UFUNCTION(BlueprintCallable)
 	void RequestGameplayAction(UMGameplayActionAsset* ActionAsset);
 
 	UFUNCTION(BlueprintCallable)
@@ -141,6 +157,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	bool IsActionActive(UMGameplayActionAsset* ActionAsset);
+
+	UFUNCTION(BlueprintCallable)
+	void MarkActionStarted(UMGameplayActionAsset* ActionAsset);
 
 	UFUNCTION(BlueprintCallable)
 	void MarkActionFinished(UMGameplayActionAsset* ActionAsset);

@@ -8,6 +8,7 @@
 #include "MMath.h"
 #include "MMultisourceLockableBool.h"
 #include "Condition/MGameplayCondition_Base.h"
+#include "MSimpleGAS/GameplayAction/MGameplayActionImplementation.h"
 
 // UMGameplayActionInstance
 void UMGameplayActionInstance::Initialize(UMGameplayActionAsset* InActionAsset)
@@ -24,6 +25,12 @@ void UMGameplayActionInstance::Initialize(UMGameplayActionAsset* InActionAsset)
 
 		Condition->OnConditionSourceChangedDelegate.AddDynamic(this, &UMGameplayActionInstance::OnConditionSourceChanged);
 		Condition->ListenForChanges(GetWorld());
+	}
+
+	if (InActionAsset->ActionImplementation != nullptr)
+	{
+		ActionImplementation = NewObject<UMGameplayActionImplementation>(this, InActionAsset->ActionImplementation,
+		                                                                 TEXT("ActionImplementation"), RF_Transient | RF_Public);
 	}
 
 	CooldownTimer = FMManualTimer(ActionAsset->CooldownTime);
@@ -97,6 +104,7 @@ bool UMGameplayActionInstance::IsActionActive() const
 void UMGameplayActionInstance::MarkActionStarted()
 {
 	bActionActive = true;
+	OnActionStartedDelegateNative.Broadcast();
 	OnActionStartedDelegate.Broadcast();
 }
 
@@ -104,11 +112,13 @@ void UMGameplayActionInstance::MarkActionFinished()
 {
 	CooldownTimer.Reset();
 	bActionActive = false;
+	OnActionFinishedDelegateNative.Broadcast();
 	OnActionFinishedDelegate.Broadcast();
 }
 
 void UMGameplayActionInstance::RequestActionCancel()
 {
+	OnActionCancelledDelegateNative.Broadcast();
 	OnActionCancelledDelegate.Broadcast();
 }
 
@@ -170,7 +180,28 @@ void UMGameplayActionInstance::TryTriggerAction_Internal()
 void UMGameplayActionInstance::TriggerAction_Internal()
 {
 	TriggerRequests.Empty();
-	
+
+	if (ActionImplementation != nullptr)
+	{
+		[this]
+		{
+			const UMGameplayActionComponent* ComponentOwner = GetTypedOuter<UMGameplayActionComponent>();
+			if (!ensureAlways(ComponentOwner != nullptr))
+			{
+				return;
+			}
+
+			AActor* ActorOwner = ComponentOwner->GetOwner();
+			if (!ensureAlways(ActorOwner != nullptr))
+			{
+				return;
+			}
+
+			ActionImplementation->TriggerGameplayActionImplementation(ActorOwner);
+		}();
+	}
+
+	OnActionTriggeredDelegateNative.Broadcast();
 	OnActionTriggered.Broadcast();
 }
 
@@ -260,6 +291,29 @@ void UMGameplayActionComponent::MarkActionFinishedOnActor(AActor* ActionOwnerAct
 	GameplayActionComponent->MarkActionFinished(ActionAsset);
 }
 
+bool UMGameplayActionComponent::IsActionActiveOnActor(AActor* ActionOwnerActor, UMGameplayActionAsset* ActionAsset)
+{
+	if (ActionOwnerActor == nullptr)
+	{
+		M::Debug::LogUserError(LogTemp, TEXT("Can't check if Gameplay Action is active on Actor, because ActionOwnerActor is nullptr"),
+		                       ActionOwnerActor);
+
+		return false;
+	}
+
+	UMGameplayActionComponent* GameplayActionComponent = ActionOwnerActor->FindComponentByClass<UMGameplayActionComponent>();
+	if (GameplayActionComponent == nullptr)
+	{
+		M::Debug::LogUserError(
+			LogTemp, TEXT("Can't check if Gameplay Action is active on Actor, because it doesn't have UMGameplayActionComponent"),
+			ActionOwnerActor);
+
+		return false;
+	}
+
+	return GameplayActionComponent->IsActionActive(ActionAsset);
+}
+
 void UMGameplayActionComponent::RequestGameplayAction(UMGameplayActionAsset* ActionAsset)
 {
 	UMGameplayActionInstance* GameplayActionInstance = FindOrAddActionInstance(ActionAsset);
@@ -274,6 +328,12 @@ void UMGameplayActionComponent::RequestGameplayAction(UMGameplayActionAsset* Act
 
 UMGameplayActionInstance* UMGameplayActionComponent::FindOrAddActionInstance(UMGameplayActionAsset* ActionAsset)
 {
+	if (ActionAsset == nullptr)
+	{
+		M::Debug::LogUserError(LogTemp, TEXT("Can't find or add Gameplay Action Instance, because ActionAsset is nullptr"), GetOwner());
+		return nullptr;
+	}
+
 	const TObjectPtr<UMGameplayActionInstance>* GameplayActionInstancePtrPtr =
 		ActionInstanceForActionName.Find(ActionAsset->ActionName);
 
@@ -295,12 +355,23 @@ UMGameplayActionInstance* UMGameplayActionComponent::FindOrAddActionInstance(UMG
 bool UMGameplayActionComponent::IsActionActive(UMGameplayActionAsset* ActionAsset)
 {
 	UMGameplayActionInstance* GameplayActionInstance = FindOrAddActionInstance(ActionAsset);
-	if (!ensureAlways(GameplayActionInstance == nullptr))
+	if (!ensureAlways(GameplayActionInstance != nullptr))
 	{
 		return false;
 	}
 
 	return GameplayActionInstance->IsActionActive();
+}
+
+void UMGameplayActionComponent::MarkActionStarted(UMGameplayActionAsset* ActionAsset)
+{
+	UMGameplayActionInstance* GameplayActionInstance = FindOrAddActionInstance(ActionAsset);
+	if (!ensureAlways(GameplayActionInstance != nullptr))
+	{
+		return;
+	}
+
+	GameplayActionInstance->MarkActionStarted();
 }
 
 void UMGameplayActionComponent::MarkActionFinished(UMGameplayActionAsset* ActionAsset)
