@@ -32,6 +32,6 @@ protected:
 	UFUNCTION()
 	void OnActionFinished();
 	
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Condition")
 	TObjectPtr<UMGameplayActionAsset> ActionAsset;
 };

@@ -113,7 +113,7 @@ protected:
 
 	UPROPERTY(Transient, VisibleAnywhere)
 	TObjectPtr<UMGameplayCondition_Base> Condition;
-	
+
 	UPROPERTY(Transient, VisibleAnywhere)
 	TObjectPtr<UMGameplayActionImplementation> ActionImplementation;
 
@@ -143,10 +143,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 	static void RequestGameplayActionOnActor(AActor* ActionOwnerActor, UMGameplayActionAsset* ActionAsset);
 
+	UFUNCTION(BlueprintCallable)
+	static void MarkActionStartedOnActor(AActor* ActionOwnerActor, UMGameplayActionAsset* ActionAsset);
+
 	UFUNCTION(BLueprintCallable)
 	static void MarkActionFinishedOnActor(AActor* ActionOwnerActor, UMGameplayActionAsset* ActionAsset);
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static bool IsActionActiveOnActor(AActor* ActionOwnerActor, UMGameplayActionAsset* ActionAsset);
 
 	UFUNCTION(BlueprintCallable)

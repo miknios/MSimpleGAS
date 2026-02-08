@@ -268,6 +268,29 @@ void UMGameplayActionComponent::RequestGameplayActionOnActor(AActor* ActionOwner
 	GameplayActionComponent->RequestGameplayAction(ActionAsset);
 }
 
+void UMGameplayActionComponent::MarkActionStartedOnActor(AActor* ActionOwnerActor, UMGameplayActionAsset* ActionAsset)
+{
+	if (ActionOwnerActor == nullptr)
+	{
+		M::Debug::LogUserError(LogTemp, TEXT("Can't mark Gameplay Action on Actor as finished, because ActionOwnerActor is nullptr"),
+							   ActionOwnerActor);
+
+		return;
+	}
+
+	UMGameplayActionComponent* GameplayActionComponent = ActionOwnerActor->FindComponentByClass<UMGameplayActionComponent>();
+	if (GameplayActionComponent == nullptr)
+	{
+		M::Debug::LogUserError(
+			LogTemp, TEXT("Can't mark Gameplay Action on Actor as finished, because it doesn't have UMGameplayActionComponent"),
+			ActionOwnerActor);
+
+		return;
+	}
+
+	GameplayActionComponent->MarkActionStarted(ActionAsset);
+}
+
 void UMGameplayActionComponent::MarkActionFinishedOnActor(AActor* ActionOwnerActor, UMGameplayActionAsset* ActionAsset)
 {
 	if (ActionOwnerActor == nullptr)
