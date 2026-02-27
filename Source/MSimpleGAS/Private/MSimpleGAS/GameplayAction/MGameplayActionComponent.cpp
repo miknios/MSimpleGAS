@@ -11,9 +11,15 @@
 #include "MSimpleGAS/GameplayAction/MGameplayActionImplementation.h"
 
 // UMGameplayActionInstance
-void UMGameplayActionInstance::Initialize(UMGameplayActionAsset* InActionAsset)
+void UMGameplayActionInstance::Initialize(const UMGameplayActionComponent* InActionComponentOwner, UMGameplayActionAsset* InActionAsset)
 {
+	if (!ensureAlways(InActionComponentOwner != nullptr))
+	{
+		return;
+	}
+	
 	ActionAsset = InActionAsset;
+	ActionComponentOwner = InActionComponentOwner;
 
 	MultisourceLockableBool = NewObject<UMMultisourceLockableBool>(this);
 	MultisourceLockableBool->OnValueChangedDelegate.AddUniqueDynamic(this, &UMGameplayActionInstance::OnMultisourceBoolValueChanged);
@@ -24,7 +30,7 @@ void UMGameplayActionInstance::Initialize(UMGameplayActionAsset* InActionAsset)
 		                                                RF_Transient | RF_Public, InActionAsset->Condition);
 
 		Condition->OnConditionSourceChangedDelegate.AddDynamic(this, &UMGameplayActionInstance::OnConditionSourceChanged);
-		Condition->ListenForChanges(GetWorld());
+		Condition->ListenForChanges(ActionComponentOwner->GetOwner());
 	}
 
 	if (InActionAsset->ActionImplementation != nullptr)
@@ -85,9 +91,14 @@ bool UMGameplayActionInstance::CanTriggerAction() const
 		bCanTrigger &= MultisourceLockableBool->IsActive();
 	}
 
+	if (!ensureAlways(ActionComponentOwner.IsValid()))
+	{
+		return true;
+	}
+
 	if (IsValid(Condition))
 	{
-		bCanTrigger &= Condition->Evaluate(GetWorld());
+		bCanTrigger &= Condition->Evaluate(ActionComponentOwner->GetOwner());
 	}
 
 	const bool bCooldownActive = !CooldownTimer.IsCompleted();
@@ -369,7 +380,7 @@ UMGameplayActionInstance* UMGameplayActionComponent::FindOrAddActionInstance(UMG
 		}
 
 		ActionInstanceForActionName.Emplace(ActionAsset->ActionName, NewInstance);
-		NewInstance->Initialize(ActionAsset);
+		NewInstance->Initialize(this, ActionAsset);
 	}
 
 	return ActionInstanceForActionName[ActionAsset->ActionName];

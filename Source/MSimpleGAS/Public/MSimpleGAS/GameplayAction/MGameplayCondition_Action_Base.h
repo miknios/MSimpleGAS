@@ -20,11 +20,8 @@ class MSIMPLEGAS_API UMGameplayCondition_Action_Base : public UMGameplayConditio
 
 protected:
 	UFUNCTION(BlueprintCallable)
-	AActor* GetActionOwnerActor() const;
+	const AActor* GetActionOwnerActor(const UObject* ContextObject) const;
 	
 	UFUNCTION(BlueprintCallable)
-	UMGameplayActionComponent* GetActionComponent() const;
-	
-	UFUNCTION(BlueprintCallable)
-	UMGameplayActionInstance* GetActionInstance() const;
+	const UMGameplayActionComponent* GetActionComponent(const UObject* ContextObject) const;
 };

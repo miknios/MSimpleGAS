@@ -5,15 +5,16 @@
 
 #include "MSimpleGAS/GameplayAction/MGameplayActionComponent.h"
 
-bool UMGameplayCondition_Action_IsActionActive::Evaluate_Impl_Implementation(const UWorld* World)
+bool UMGameplayCondition_Action_IsActionActive::Evaluate_Impl_Implementation(const UObject* ContextObject)
 {
-	UMGameplayActionComponent* ActionComponent = GetActionComponent();
-	if (ActionComponent == nullptr)
+	const UMGameplayActionComponent* ActionComponentConst = GetActionComponent(ContextObject);
+	if (ActionComponentConst == nullptr)
 	{
 		return false;
 	}
 
-	UMGameplayActionInstance* ActionInstance = ActionComponent->FindOrAddActionInstance(ActionAsset);
+	UMGameplayActionComponent* ActionComponent = const_cast<UMGameplayActionComponent*>(ActionComponentConst);
+	const UMGameplayActionInstance* ActionInstance = ActionComponent->FindOrAddActionInstance(ActionAsset);
 	if (ActionInstance == nullptr)
 	{
 		return false;
@@ -22,14 +23,15 @@ bool UMGameplayCondition_Action_IsActionActive::Evaluate_Impl_Implementation(con
 	return ActionInstance->IsActionActive();
 }
 
-void UMGameplayCondition_Action_IsActionActive::ListenForChanges_Implementation(const UWorld* World)
+void UMGameplayCondition_Action_IsActionActive::ListenForChanges_Impl_Implementation(const UObject* ContextObject)
 {
-	UMGameplayActionComponent* ActionComponent = GetActionComponent();
-	if (ActionComponent == nullptr)
+	const UMGameplayActionComponent* ActionComponentConst = GetActionComponent(ContextObject);
+	if (ActionComponentConst == nullptr)
 	{
 		return;
 	}
 
+	UMGameplayActionComponent* ActionComponent = const_cast<UMGameplayActionComponent*>(ActionComponentConst);
 	UMGameplayActionInstance* ActionInstance = ActionComponent->FindOrAddActionInstance(ActionAsset);
 	if (ActionInstance == nullptr)
 	{
@@ -40,14 +42,15 @@ void UMGameplayCondition_Action_IsActionActive::ListenForChanges_Implementation(
 	ActionInstance->OnActionFinishedDelegate.AddDynamic(this, &UMGameplayCondition_Action_IsActionActive::OnActionFinished);
 }
 
-void UMGameplayCondition_Action_IsActionActive::StopListeningForChanges_Implementation(const UWorld* World)
+void UMGameplayCondition_Action_IsActionActive::StopListeningForChanges_Impl_Implementation(const UObject* ContextObject)
 {
-	UMGameplayActionComponent* ActionComponent = GetActionComponent();
-	if (ActionComponent == nullptr)
+	const UMGameplayActionComponent* ActionComponentConst = GetActionComponent(ContextObject);
+	if (ActionComponentConst == nullptr)
 	{
 		return;
 	}
 
+	UMGameplayActionComponent* ActionComponent = const_cast<UMGameplayActionComponent*>(ActionComponentConst);
 	UMGameplayActionInstance* ActionInstance = ActionComponent->FindOrAddActionInstance(ActionAsset);
 	if (ActionInstance == nullptr)
 	{

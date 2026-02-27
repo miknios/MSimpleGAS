@@ -6,35 +6,21 @@
 #include "MDebug.h"
 #include "MSimpleGAS/GameplayAttribute/MGameplayAttribute_FloatBase.h"
 
-float UMFloatSource_GameplayAttribute::GetFloatValue_Implementation(UObject* ContextObject) const
+float UMFloatSource_GameplayAttribute::GetFloatValue_Impl_Implementation(const UObject* ContextObject) const
 {
-	AActor* OwnerActor = [this, ContextObject]
-	{
-		if (ContextObject != nullptr)
-		{
-			if (AActor* ContextActor = Cast<AActor>(ContextObject))
-			{
-				return ContextActor;
-			}
-
-			return ContextObject->GetTypedOuter<AActor>();
-		}
-
-		return GetTypedOuter<AActor>();
-	}();
-
-	if (OwnerActor == nullptr)
+	const AActor* OwnerActorConst = Cast<AActor>(ContextObject);
+	if (OwnerActorConst == nullptr)
 	{
 		M::Debug::LogUserError(
 			LogTemp,
 			TEXT(
-				"Trying to get Float Value from Gameplay Attribute Source, but Actor cannot be found in Float Source outer chain or provided Context Object outer chain"),
+				"Trying to get Float Value from Gameplay Attribute Source, but Float Source context object is not an Actor"),
 			ContextObject);
 		return 0.f;
 	}
 
-	const UMGameplayAttribute_FloatBase* AttributeFloat =
-		UMGameplayAttribute_FloatBase::GetAttributeFloat(OwnerActor, AttributeClass);
+	AActor* OwnerActor = const_cast<AActor*>(OwnerActorConst);
+	const UMGameplayAttribute_FloatBase* AttributeFloat = UMGameplayAttribute_FloatBase::GetAttributeFloat(OwnerActor, AttributeClass);
 	if (AttributeFloat == nullptr)
 	{
 		return 0.f;
@@ -44,16 +30,16 @@ float UMFloatSource_GameplayAttribute::GetFloatValue_Implementation(UObject* Con
 	return Result;
 }
 
-void UMFloatSource_GameplayAttribute::ListenForChanges_Implementation()
+void UMFloatSource_GameplayAttribute::ListenForChanges_Impl_Implementation(const UObject* ContextObject)
 {
-	AActor* OwnerActor = GetTypedOuter<AActor>();
-	if (OwnerActor == nullptr)
+	const AActor* OwnerActorConst = Cast<AActor>(ContextObject);
+	if (OwnerActorConst == nullptr)
 	{
 		return;
 	}
 
-	UMGameplayAttribute_FloatBase* AttributeFloat =
-		UMGameplayAttribute_FloatBase::GetAttributeFloat(OwnerActor, AttributeClass);
+	AActor* OwnerActor = const_cast<AActor*>(OwnerActorConst);
+	UMGameplayAttribute_FloatBase* AttributeFloat = UMGameplayAttribute_FloatBase::GetAttributeFloat(OwnerActor, AttributeClass);
 	if (AttributeFloat == nullptr)
 	{
 		return;
@@ -62,16 +48,16 @@ void UMFloatSource_GameplayAttribute::ListenForChanges_Implementation()
 	AttributeFloat->OnAttributeChangedDelegate.AddUniqueDynamic(this, &UMFloatSource_GameplayAttribute::OnAttributeChanged);
 }
 
-void UMFloatSource_GameplayAttribute::StopListeningForChanges_Implementation()
+void UMFloatSource_GameplayAttribute::StopListeningForChanges_Impl_Implementation(const UObject* ContextObject)
 {
-	AActor* OwnerActor = GetTypedOuter<AActor>();
-	if (OwnerActor == nullptr)
+	const AActor* OwnerActorConst = Cast<AActor>(ContextObject);
+	if (OwnerActorConst == nullptr)
 	{
 		return;
 	}
 
-	UMGameplayAttribute_FloatBase* AttributeFloat =
-		UMGameplayAttribute_FloatBase::GetAttributeFloat(OwnerActor, AttributeClass);
+	AActor* OwnerActor = const_cast<AActor*>(OwnerActorConst);
+	UMGameplayAttribute_FloatBase* AttributeFloat = UMGameplayAttribute_FloatBase::GetAttributeFloat(OwnerActor, AttributeClass);
 	if (AttributeFloat == nullptr)
 	{
 		return;

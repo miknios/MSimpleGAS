@@ -5,28 +5,24 @@
 
 #include "MSimpleGAS/GameplayAction/MGameplayActionComponent.h"
 
-AActor* UMGameplayCondition_Action_Base::GetActionOwnerActor() const
+const AActor* UMGameplayCondition_Action_Base::GetActionOwnerActor(const UObject* ContextObject) const
 {
-	UMGameplayActionComponent* GameplayActionComponent = GetActionComponent();
-	if (GameplayActionComponent == nullptr)
+	const AActor* ContextActor = Cast<AActor>(ContextObject);
+	if (!ensureAlways(ContextActor != nullptr))
 	{
 		return nullptr;
 	}
 
-	return GameplayActionComponent->GetOwner();
+	return ContextActor;
 }
 
-UMGameplayActionComponent* UMGameplayCondition_Action_Base::GetActionComponent() const
+const UMGameplayActionComponent* UMGameplayCondition_Action_Base::GetActionComponent(const UObject* ContextObject) const
 {
-	UMGameplayActionComponent* GameplayActionComponent = GetTypedOuter<UMGameplayActionComponent>();
-	ensureAlways(GameplayActionComponent != nullptr);
-	return GameplayActionComponent;
-}
-
-UMGameplayActionInstance* UMGameplayCondition_Action_Base::GetActionInstance() const
-{
-	UMGameplayActionInstance* ActionInstance = GetTypedOuter<UMGameplayActionInstance>();
-	ensureAlways(ActionInstance != nullptr);
+	const AActor* OwnerActor = GetActionOwnerActor(ContextObject);
+	if (OwnerActor == nullptr)
+	{
+		return nullptr;
+	}
 	
-	return ActionInstance;
+	return OwnerActor->FindComponentByClass<UMGameplayActionComponent>();
 }

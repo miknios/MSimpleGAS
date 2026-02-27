@@ -42,7 +42,7 @@ class MSIMPLEGAS_API UMGameplayActionInstance : public UObject
 	friend class UMGameplayActionComponent;
 
 public:
-	void Initialize(UMGameplayActionAsset* InActionAsset);
+	void Initialize(const UMGameplayActionComponent* InActionComponentOwner, UMGameplayActionAsset* InActionAsset);
 
 	// Call to request action trigger. This doesn't mean the action is going to start at this exact moment or that its going to start at all
 	UFUNCTION(BlueprintCallable)
@@ -123,6 +123,9 @@ protected:
 
 	UPROPERTY(Transient, VisibleAnywhere)
 	FMManualTimer CooldownTimer;
+	
+	UPROPERTY(Transient)
+	TWeakObjectPtr<const UMGameplayActionComponent> ActionComponentOwner;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UMMultisourceLockableBool> MultisourceLockableBool;

@@ -9,7 +9,7 @@
 class UMGameplayActionImplementation;
 class UMGameplayCondition_Base;
 
-UCLASS(BlueprintType)
+UCLASS(BlueprintType, Blueprintable)
 class MSIMPLEGAS_API UMGameplayActionAsset : public UDataAsset
 {
 	GENERATED_BODY()
@@ -26,7 +26,7 @@ public:
 
 	UPROPERTY(Instanced, EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<UMGameplayCondition_Base> Condition = nullptr;
-	
+
 	// Assign implementation of Gameplay Action if all the logic can be contained within a single Blueprint class for easier setup
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<UMGameplayActionImplementation> ActionImplementation = nullptr;

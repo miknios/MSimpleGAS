@@ -16,9 +16,9 @@ class MSIMPLEGAS_API UMFloatSource_GameplayAttribute : public UMFloatSource_Base
 
 public:
 	// UMFloatSource_Base
-	virtual float GetFloatValue_Implementation(UObject* ContextObject) const override;
-	virtual void ListenForChanges_Implementation() override;
-	virtual void StopListeningForChanges_Implementation() override;
+	virtual float GetFloatValue_Impl_Implementation(const UObject* ContextObject) const override;
+	virtual void ListenForChanges_Impl_Implementation(const UObject* ContextObject) override;
+	virtual void StopListeningForChanges_Impl_Implementation(const UObject* ContextObject) override;
 	// ~ UMFloatSource_Base
 
 protected:
