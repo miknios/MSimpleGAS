@@ -145,6 +145,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	static void RequestGameplayActionOnActor(AActor* ActionOwnerActor, UMGameplayActionAsset* ActionAsset);
+	
+	UFUNCTION(BlueprintCallable)
+	static void RequestGameplayActionCancelOnActor(AActor* ActionOwnerActor, UMGameplayActionAsset* ActionAsset);
 
 	UFUNCTION(BlueprintCallable)
 	static void MarkActionStartedOnActor(AActor* ActionOwnerActor, UMGameplayActionAsset* ActionAsset);
@@ -157,6 +160,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void RequestGameplayAction(UMGameplayActionAsset* ActionAsset);
+	
+	UFUNCTION(BlueprintCallable)
+	void RequestGameplayActionCancel(UMGameplayActionAsset* ActionAsset);
 
 	UFUNCTION(BlueprintCallable)
 	UMGameplayActionInstance* FindOrAddActionInstance(UMGameplayActionAsset* ActionAsset);

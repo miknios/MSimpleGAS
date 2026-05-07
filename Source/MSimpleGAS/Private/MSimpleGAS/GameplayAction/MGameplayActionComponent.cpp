@@ -17,7 +17,7 @@ void UMGameplayActionInstance::Initialize(const UMGameplayActionComponent* InAct
 	{
 		return;
 	}
-	
+
 	ActionAsset = InActionAsset;
 	ActionComponentOwner = InActionComponentOwner;
 
@@ -279,12 +279,43 @@ void UMGameplayActionComponent::RequestGameplayActionOnActor(AActor* ActionOwner
 	GameplayActionComponent->RequestGameplayAction(ActionAsset);
 }
 
+void UMGameplayActionComponent::RequestGameplayActionCancelOnActor(AActor* ActionOwnerActor, UMGameplayActionAsset* ActionAsset)
+{
+	if (ActionOwnerActor == nullptr)
+	{
+		M::Debug::LogUserError(LogTemp, TEXT("Can't request Gameplay Action cancel on Actor, because ActionOwnerActor is nullptr"),
+		                       ActionOwnerActor);
+
+		return;
+	}
+
+	if (ActionAsset == nullptr)
+	{
+		M::Debug::LogUserError(LogTemp, TEXT("Can't request Gameplay Action cancel on Actor, because ActionAsset is nullptr"),
+		                       ActionOwnerActor);
+
+		return;
+	}
+
+	UMGameplayActionComponent* GameplayActionComponent = ActionOwnerActor->FindComponentByClass<UMGameplayActionComponent>();
+	if (GameplayActionComponent == nullptr)
+	{
+		M::Debug::LogUserError(
+			LogTemp, TEXT("Can't request Gameplay Action cancel on Actor, because it doesn't have UMGameplayActionComponent"),
+			ActionOwnerActor);
+
+		return;
+	}
+
+	GameplayActionComponent->RequestGameplayActionCancel(ActionAsset);
+}
+
 void UMGameplayActionComponent::MarkActionStartedOnActor(AActor* ActionOwnerActor, UMGameplayActionAsset* ActionAsset)
 {
 	if (ActionOwnerActor == nullptr)
 	{
 		M::Debug::LogUserError(LogTemp, TEXT("Can't mark Gameplay Action on Actor as finished, because ActionOwnerActor is nullptr"),
-							   ActionOwnerActor);
+		                       ActionOwnerActor);
 
 		return;
 	}
@@ -358,6 +389,18 @@ void UMGameplayActionComponent::RequestGameplayAction(UMGameplayActionAsset* Act
 	}
 
 	GameplayActionInstance->RequestActionTrigger();
+}
+
+void UMGameplayActionComponent::RequestGameplayActionCancel(UMGameplayActionAsset* ActionAsset)
+{
+	UMGameplayActionInstance* GameplayActionInstance = FindOrAddActionInstance(ActionAsset);
+	if (GameplayActionInstance == nullptr)
+	{
+		M::Debug::LogUserError(LogTemp, TEXT("Can't request Gameplay Action cancel, because it couldn't be created"), this);
+		return;
+	}
+
+	GameplayActionInstance->RequestActionCancel();
 }
 
 UMGameplayActionInstance* UMGameplayActionComponent::FindOrAddActionInstance(UMGameplayActionAsset* ActionAsset)
