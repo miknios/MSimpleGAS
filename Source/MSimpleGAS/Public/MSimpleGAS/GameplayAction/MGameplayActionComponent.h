@@ -166,6 +166,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	UMGameplayActionInstance* FindOrAddActionInstance(UMGameplayActionAsset* ActionAsset);
+	
+	UFUNCTION(BlueprintCallable)
+	UMGameplayActionInstance* FindActionInstance(UMGameplayActionAsset* ActionAsset) const;
 
 	UFUNCTION(BlueprintCallable)
 	bool IsActionActive(UMGameplayActionAsset* ActionAsset);

@@ -429,10 +429,29 @@ UMGameplayActionInstance* UMGameplayActionComponent::FindOrAddActionInstance(UMG
 	return ActionInstanceForActionName[ActionAsset->ActionName];
 }
 
+UMGameplayActionInstance* UMGameplayActionComponent::FindActionInstance(UMGameplayActionAsset* ActionAsset) const
+{
+	if (ActionAsset == nullptr)
+	{
+		M::Debug::LogUserError(LogTemp, TEXT("Can't find Gameplay Action Instance, because ActionAsset is nullptr"), GetOwner());
+		return nullptr;
+	}
+
+	const TObjectPtr<UMGameplayActionInstance>* GameplayActionInstancePtrPtr =
+		ActionInstanceForActionName.Find(ActionAsset->ActionName);
+
+	if (GameplayActionInstancePtrPtr == nullptr)
+	{
+		return nullptr;
+	}
+
+	return *GameplayActionInstancePtrPtr;
+}
+
 bool UMGameplayActionComponent::IsActionActive(UMGameplayActionAsset* ActionAsset)
 {
-	UMGameplayActionInstance* GameplayActionInstance = FindOrAddActionInstance(ActionAsset);
-	if (!ensureAlways(GameplayActionInstance != nullptr))
+	const UMGameplayActionInstance* GameplayActionInstance = FindActionInstance(ActionAsset);
+	if (GameplayActionInstance == nullptr)
 	{
 		return false;
 	}
